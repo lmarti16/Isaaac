@@ -40,7 +40,6 @@ ResultadosDF $MORENA_21 <- as.numeric(ResultadosDF $MORENA_21)
 Lista_Nominal_Selected $SECCION <- as.numeric(Lista_Nominal_Selected $SECCION)
 Lista_Nominal_Selected $ENTIDAD <- as.numeric(Lista_Nominal_Selected $ENTIDAD)
 
-
 # Renombrar los resultados 
 ResultadosDF$GANADOR_21 <- recode(ResultadosDF$GANADOR_21,
                                   "EMPATE" = "Empate",
@@ -57,6 +56,7 @@ Resultados_SONORA <- left_join(Resultados_SONORA, ListaN_SONORA, by = c("SECCION
 Resultados_SONORA <- Resultados_SONORA %>% 
     mutate( diferencia = porcentaje_JHH_21 - porcentaje_VPM_21)
 
+#armar el Distrito Federal
 Resultados_SONORA_DF2 <- filter(Resultados_SONORA, DISTRITO == 2)
 Secciones_SONORA_DF2 <- filter(Secciones_SONORA, DISTRITO == 2)
 Manzanas_SONORA_DF2 <- filter(Manzanas_SONORA, DISTRITO_F == 2)
@@ -86,10 +86,10 @@ Resultados_SONORA_DF2 <- Resultados_SONORA_DF2 %>%
     ))
 
 # Unir los dataframes por SECCION y ENTIDAD
-mapaSONORA <- left_join(Secciones_SONORA_DF2, Resultados_SONORA_DF2, by = c("SECCION", "ENTIDAD"))
+mapaSONORA_DF2 <- left_join(Secciones_SONORA_DF2, Resultados_SONORA_DF2, by = c("SECCION", "ENTIDAD"))
 
 # Transformar sistema de coordenadas
-mapaSONORA <- st_transform(mapaSONORA, crs = 4326)
+mapaSONORA_DF2 <- st_transform(mapaSONORA_DF2, crs = 4326)
 Secciones_SONORA_DF2 <- st_transform(Secciones_SONORA_DF2, crs = 4326)
 Manzanas_SONORA_DF2 <- st_transform(Manzanas_SONORA_DF2, crs = 4326)
 
@@ -105,15 +105,12 @@ colores_CompetitividadD <- colorFactor(
     domain = c("Muy poca Competitividad", "Poca Competitividad", "Competitividad media", "Alta Competitividad", "Muy alta Competitividad")
 )
 
-
 # Reordenar los niveles del factor GANADOR_21
-mapaSONORA$GANADOR_21 <- factor(mapaSONORA$GANADOR_21,
+mapaSONORA_DF2$GANADOR_21 <- factor(mapaSONORA_DF2$GANADOR_21,
                             levels = c("Juntos Hacemos Historia", "Frente Amplio por México", "Movimiento Ciudadano","Empate"))
 
-
-
 # Reordenar los niveles del factor CompetitividadD
-mapaSONORA$CompetitividadD <- factor(mapaSONORA$CompetitividadD,
+mapaSONORA_DF2$CompetitividadD <- factor(mapaSONORA_DF2$CompetitividadD,
                                     levels = c("Muy poca Competitividad", "Poca Competitividad", "Competitividad media", "Alta Competitividad", "Muy alta Competitividad"))
 
 #MAPA CONSOLIDADD
@@ -122,7 +119,7 @@ mapaSONORA$CompetitividadD <- factor(mapaSONORA$CompetitividadD,
 mapa <- leaflet() %>%
     addProviderTiles(provider = "OpenStreetMap")
 
-# Agregar la primera capa de polígonos con los datos de mapaSONORA
+# Agregar la primera capa de polígonos con los datos de mapaSONORA_DF2
 mapa <- mapa %>%
     addPolygons(
         data = Secciones_SONORA_DF2,
@@ -135,7 +132,7 @@ mapa <- mapa %>%
         group = "Secciones"     # Nombre del grupo de la capa
     )
 
-# Agregar la segunda capa de polígonos con los datos de  mapaSONORA
+# Agregar la segunda capa de polígonos con los datos de  mapaSONORA_DF2
 mapa <- mapa %>%
     addPolygons(
         data = Manzanas_SONORA_DF2,
@@ -148,10 +145,10 @@ mapa <- mapa %>%
         group = "Manzanas"     # Nombre del grupo de la capa
     )
     
-# Agregar la tercer capa de polígonos con los datos de mapaSONORA y el color según el GANADOR_21
+# Agregar la tercer capa de polígonos con los datos de mapaSONORA_DF2 y el color según el GANADOR_21
 mapa <- mapa %>%
     addPolygons(
-        data = mapaSONORA,
+        data = mapaSONORA_DF2,
         fillColor = ~colores_GANADOR_21(GANADOR_21),
         fillOpacity = 0.8,
         label = ~SECCION,
@@ -159,11 +156,11 @@ mapa <- mapa %>%
         weight = 1,
 popup = ~paste("Numero de Sección:", SECCION, "<br>",
                        "Coalición Ganadora:", GANADOR_21, "<br>",
-                       "Competitividad de la Manzana", CompetitividadD, "<br>",
+                       "Competitividad de la Sección:", CompetitividadD, "<br>",
                        "Votos por el FAM:", VaxMex_21, "<br>",
                        "Porcentaje de votos por el FAM:", paste(round(porcentaje_VPM_21, 2), "%"), "<br>",
-                       "Votos por el Oficialismo:", JHH_21, "<br>",
-                       "Porcentaje de votos por el Oficialismo:", paste(round(porcentaje_JHH_21, 2), "%"), "<br>",
+                       "Votos por JHH:", JHH_21, "<br>",
+                       "Porcentaje de votos por JHH:", paste(round(porcentaje_JHH_21, 2), "%"), "<br>",
                        "Votos por MC:", MC_21, "<br>",
                        "Porcentaje de votos por MC:", paste(round(porcentaje_MC_21, 2), "%"), "<br>",
                        "Población Generación Z:", GEN_Z_TOTAL, "<br>",
@@ -181,10 +178,10 @@ popup = ~paste("Numero de Sección:", SECCION, "<br>",
         group = "Coalición Ganadora"       # Nombre del grupo de la capa
     ) 
 
-# Agregar la quinta capa de polígonos con los datos de mapaSONORA y el color según la competitividad
+# Agregar la quinta capa de polígonos con los datos de mapaSONORA_DF2 y el color según la competitividad
 mapa <- mapa %>%
     addPolygons(
-        data = mapaSONORA,
+        data = mapaSONORA_DF2,
         fillColor = ~colores_CompetitividadD(CompetitividadD),
         fillOpacity = 0.8,
         label = ~SECCION,
@@ -192,11 +189,11 @@ mapa <- mapa %>%
         weight = 1,
        popup = ~paste( "Numero de Sección:", SECCION, "<br>",
                        "Coalición Ganadora:", GANADOR_21, "<br>",
-                       "Competitividad de la Manzana", CompetitividadD, "<br>",
+                       "Competitividad de la Sección:", CompetitividadD, "<br>",
                        "Votos por el FAM:", VaxMex_21, "<br>",
                        "Porcentaje de votos por el FAM:", paste(round(porcentaje_VPM_21, 2), "%"), "<br>",
-                       "Votos por el Oficialismo:", JHH_21, "<br>",
-                       "Porcentaje de votos por el Oficialismo:", paste(round(porcentaje_JHH_21, 2), "%"), "<br>",
+                       "Votos por JHH:", JHH_21, "<br>",
+                       "Porcentaje de votos por JHH:", paste(round(porcentaje_JHH_21, 2), "%"), "<br>",
                        "Votos por MC:", MC_21, "<br>",
                        "Porcentaje de votos por MC:", paste(round(porcentaje_MC_21, 2), "%"), "<br>",
                        "Población Generación Z:", GEN_Z_TOTAL, "<br>",
@@ -225,7 +222,7 @@ mapa <- mapa %>%
 # Agregar las leyendas al mapa
 mapa <- mapa %>%
     addLegend(
-        data = mapaSONORA,
+        data = mapaSONORA_DF2,
         pal = colores_GANADOR_21, # Establecer los colores de la leyenda usando colores
         values = ~GANADOR_21, # Establecer los valores de la leyenda
         title = "Ganador de la última elección", # Establecer el título de la leyenda
@@ -233,7 +230,7 @@ mapa <- mapa %>%
         layerId = "LeyendaGANADOR_21"
     ) %>%
     addLegend(
-        data = mapaSONORA,
+        data = mapaSONORA_DF2,
         pal = colores_CompetitividadD, # Establecer los colores de la leyenda usando colores
         values = ~CompetitividadD, # Establecer los valores de la leyenda
         title = "Competitividad Electoral",
