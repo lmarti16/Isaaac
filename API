@@ -67,21 +67,23 @@ quintilesF <- quantile(Resultados_SONORA_DF2$porcentaje_VPM_21, probs = c(0, 0.2
 quintilesM <- quantile(Resultados_SONORA_DF2$porcentaje_JHH_21, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
 quintilesD <- quantile(Resultados_SONORA_DF2$diferencia, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
 
-# Agrega columna con quintiles
+# Asignar etiquetas automáticamente
+labels <- c("Muy poca Competitividad", "Poca Competitividad", "Competitividad media", "Alta Competitividad", "Muy alta Competitividad")
 
-Resultados_SONORA_DF2$quintilF <- cut(Resultados_SONORA_DF2$porcentaje_VPM_21, breaks = quintilesF, include.lowest = TRUE)
-Resultados_SONORA_DF2$quintilM <- cut(Resultados_SONORA_DF2$porcentaje_JHH_21, breaks = quintilesM, include.lowest = TRUE)
-Resultados_SONORA_DF2$quintilD <- cut(Resultados_SONORA_DF2$diferencia, breaks = quintilesD, include.lowest = TRUE)
+# Agrega columna con quintiles y etiquetas
+Resultados_SONORA_DF2$quintilF <- cut(Resultados_SONORA_DF2$porcentaje_VPM_21, breaks = quintilesF, labels = labels, include.lowest = TRUE)
+Resultados_SONORA_DF2$quintilM <- cut(Resultados_SONORA_DF2$porcentaje_JHH_21, breaks = quintilesM, labels = labels, include.lowest = TRUE)
+Resultados_SONORA_DF2$quintilD <- cut(Resultados_SONORA_DF2$diferencia, breaks = quintilesD, labels = labels, include.lowest = TRUE)
 
-# Crear la nueva columna Orden_quintiles_D CON LA TABLE DE QUINTIL DIFERENCIA
+# Crear la nueva columna CompetitividadD
 Resultados_SONORA_DF2 <- Resultados_SONORA_DF2 %>%
     mutate(CompetitividadD = case_when(
-        quintilD == "[-48.3,-10.1]" ~ "Muy poca Competitividad",
-        quintilD == "(-10.1,4.24]" ~ "Poca Competitividad",
-        quintilD == "(4.24,17.4]" ~ "Competitividad media",
-        quintilD == "(17.4,28]" ~ "Alta Competitividad",
-        quintilD == "(28,64.3]" ~ "Muy alta Competitividad"
-    ))     
+        quintilD == labels[1] ~ "Muy poca Competitividad",
+        quintilD == labels[2] ~ "Poca Competitividad",
+        quintilD == labels[3] ~ "Competitividad media",
+        quintilD == labels[4] ~ "Alta Competitividad",
+        quintilD == labels[5] ~ "Muy alta Competitividad"
+    ))
 
 # Unir los dataframes por SECCION y ENTIDAD
 mapaSONORA <- left_join(Secciones_SONORA_DF2, Resultados_SONORA_DF2, by = c("SECCION", "ENTIDAD"))
