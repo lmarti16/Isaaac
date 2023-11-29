@@ -90,6 +90,7 @@ mapaSONORA <- left_join(Secciones_SONORA_DF2, Resultados_SONORA_DF2, by = c("SEC
 # Transformar sistema de coordenadas
 mapaSONORA <- st_transform(mapaSONORA, crs = 4326)
 Secciones_SONORA_DF2 <- st_transform(Secciones_SONORA_DF2, crs = 4326)
+Manzanas_SONORA_DF2 <- st_transform(Manzanas_SONORA_DF2, crs = 4326)
 
 # Definir los colores para cada nivel de competitividad
 colores_GANADOR_21 <- colorFactor(
@@ -135,7 +136,7 @@ mapa <- mapa %>%
 # Agregar la segunda capa de polígonos con los datos de  mapaSONORA
 mapa <- mapa %>%
     addPolygons(
-        data = mapaSONORA,
+        data = Manzanas_SONORA_DF2,
         fillColor = "white",    # Color de fondo blanco
         fillOpacity = 0.5,      # Transparencia del fondo
         label = ~SECCION,
@@ -173,9 +174,9 @@ popup = ~paste("Numero de Sección:", SECCION, "<br>",
                        "Porcentaje de Baby Boomers:", paste(round(BOOMERS_TOTAL_PORCENTAJE*100, 2), "%"), "<br>",
                        "Población Silent Generation:", SILENT_TOTAL, "<br>",
                        "Porcentaje Silent Generation:", paste(round(SILENT_TOTAL_PORCENTAJE*100, 2), "%"), "<br>",
-                       "Votos Nulos:", NULOS, "<br>",
+                       "Votos Nulos:", VOTOS_NULOS_21, "<br>",
                         "Lista Nominal para 2024:", LISTA_NOMINAL),
-        group = "GANADOR_21"       # Nombre del grupo de la capa
+        group = "Coalición Ganadora"       # Nombre del grupo de la capa
     ) 
 
 # Agregar la quinta capa de polígonos con los datos de mapaSONORA y el color según la competitividad
@@ -206,7 +207,7 @@ mapa <- mapa %>%
                        "Porcentaje de Baby Boomers:", paste(round(BOOMERS_TOTAL_PORCENTAJE*100, 2), "%"), "<br>",
                        "Población Silent Generation:", SILENT_TOTAL, "<br>",
                        "Porcentaje Silent Generation:", paste(round(SILENT_TOTAL_PORCENTAJE*100, 2), "%"), "<br>",
-                       "Votos Nulos:", NULOS, "<br>",
+                       "Votos Nulos:", VOTOS_NULOS_21, "<br>",
                         "Lista Nominal para 2024:", LISTA_NOMINAL),
         group = "Competitividad"       # Nombre del grupo de la capa
     ) 
@@ -215,7 +216,7 @@ mapa <- mapa %>%
 mapa <- mapa %>%
     addLayersControl(
         baseGroups = c("Secciones", "Manzanas"),
-        overlayGroups = c("GANADOR_21", "Competitividad"),
+        overlayGroups = c("Coalición Ganadora", "Competitividad"),
         options = layersControlOptions(collapsed = FALSE)
     )
 
@@ -225,7 +226,7 @@ mapa <- mapa %>%
         data = mapaSONORA,
         pal = colores_GANADOR_21, # Establecer los colores de la leyenda usando colores
         values = ~GANADOR_21, # Establecer los valores de la leyenda
-        title = "Canador de la última elección", # Establecer el título de la leyenda
+        title = "Ganador de la última elección", # Establecer el título de la leyenda
         position = "bottomleft",
         layerId = "LeyendaGANADOR_21"
     ) %>%
@@ -236,15 +237,7 @@ mapa <- mapa %>%
         title = "Competitividad Electoral",
         position = "bottomleft",
         layerId = "LeyendaCompetitividad"
-    ) %>%
-    addLegend(
-        data = ESEM_CDMX_16,
-        pal = colores_ESEM, # Establecer los colores de la leyenda usando colores
-        values = ~NIVEL, # Establecer los valores de la leyenda
-        title = "Niveles Socioeconómicos",
-        position = "bottomleft",
-        layerId = "LeyendaESEM"
-    )
+    ) 
 
 # Agregar el control de HTML al mapa
 mapa <- mapa %>%
