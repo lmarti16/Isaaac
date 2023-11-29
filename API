@@ -55,7 +55,7 @@ Resultados_SONORA <- left_join(Resultados_SONORA, ListaN_SONORA, by = c("SECCION
 
 
 Resultados_SONORA <- Resultados_SONORA %>% 
-    mutate( diferencia = porcentaje_VPM_21 - porcentaje_JHH_21)
+    mutate( diferencia = porcentaje_JHH_21 - porcentaje_VPM_21)
 
 Resultados_SONORA_DF2 <- filter(Resultados_SONORA, DISTRITO == 2)
 Secciones_SONORA_DF2 <- filter(Secciones_SONORA, DISTRITO == 2)
@@ -76,13 +76,12 @@ Resultados_SONORA_DF2$quintilD <- cut(Resultados_SONORA_DF2$diferencia, breaks =
 # Crear la nueva columna Orden_quintiles_D CON LA TABLE DE QUINTIL DIFERENCIA
 Resultados_SONORA_DF2 <- Resultados_SONORA_DF2 %>%
     mutate(CompetitividadD = case_when(
-        quintilD == "[-64.3,-28]" ~ "Muy poca Competitividad",
-        quintilD == "(-28,-17.4]" ~ "Poca Competitividad",
-        quintilD == "(-17.4,-4.24]" ~ "Competitividad media",
-        quintilD == "(-4.24,10.1]" ~ "Alta Competitividad",
-        quintilD == "(10.1,48.3]" ~ "Muy alta Competitividad"
-    ))
-
+        quintilD == "[-48.3,-10.1]" ~ "Muy poca Competitividad",
+        quintilD == "(-10.1,4.24]" ~ "Poca Competitividad",
+        quintilD == "(4.24,17.4]" ~ "Competitividad media",
+        quintilD == "(17.4,28]" ~ "Alta Competitividad",
+        quintilD == "(28,64.3]" ~ "Muy alta Competitividad"
+    ))     
 
 # Unir los dataframes por SECCION y ENTIDAD
 mapaSONORA <- left_join(Secciones_SONORA_DF2, Resultados_SONORA_DF2, by = c("SECCION", "ENTIDAD"))
@@ -108,6 +107,7 @@ colores_CompetitividadD <- colorFactor(
 # Reordenar los niveles del factor GANADOR_21
 mapaSONORA$GANADOR_21 <- factor(mapaSONORA$GANADOR_21,
                             levels = c("Juntos Hacemos Historia", "Frente Amplio por México", "Movimiento Ciudadano","Empate"))
+
 
 
 # Reordenar los niveles del factor CompetitividadD
