@@ -12,6 +12,7 @@ library(ggthemes)
 library(wesanderson)
 library(pdftools)
 library(leaflet)
+library(rio)
 
 
 # Leer archivo SHP usando read_sf()
@@ -112,8 +113,8 @@ Municipios_SONORA_DF2 <- st_transform(Municipios_SONORA_DF2, crs = 4326)
 
 # Definir los colores para cada nivel de competitividad
 colores_GANADOR_21 <- colorFactor(
-    palette = c("yellow", "brown", "darkblue"), 
-    levels = c("EMPATE", "Juntos Hacemos Historia", "Frente Amplio por México")
+    palette = c("purple", "brown", "darkblue"), 
+    levels = c("Empate", "Juntos Hacemos Historia", "Frente Amplio por México")
 )
 
 # Definir los colores para cada nivel de competitividad
@@ -197,6 +198,7 @@ mapa <- mapa %>%
         color = "white",
         weight = 1,
 popup = ~paste("Numero de Sección:", SECCION, "<br>",
+                       "¿Es sección Switcher?:", Switcher, "<br>",
                        "Coalición Ganadora:", GANADOR_21, "<br>",
                        "Partido preponderante en 2021:", Ganador_Partido21, "<br>",
                        "Partido preponderante en 2018:", Ganador_Partido18, "<br>",
@@ -231,7 +233,8 @@ mapa <- mapa %>%
         label = ~SECCION,
         color = "white",
         weight = 1,
-       popup = ~paste( "Numero de Sección:", SECCION, "<br>",
+       popup = ~paste("Numero de Sección:", SECCION, "<br>",
+                       "¿Es sección Switcher?:", Switcher, "<br>",
                        "Coalición Ganadora:", GANADOR_21, "<br>",
                        "Partido preponderante en 2021:", Ganador_Partido21, "<br>",
                        "Partido preponderante en 2018:", Ganador_Partido18, "<br>",
