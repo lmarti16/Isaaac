@@ -198,6 +198,8 @@ mapa <- mapa %>%
         weight = 1,
 popup = ~paste("Numero de Sección:", SECCION, "<br>",
                        "Coalición Ganadora:", GANADOR_21, "<br>",
+                       "Partido preponderante en 2021:", Ganador_Partido21, "<br>",
+                       "Partido preponderante en 2018:", Cambio_elector, "<br>",
                        "Competitividad de la Sección:", CompetitividadD, "<br>",
                        "Votos por el FAM:", VaxMex_21, "<br>",
                        "Porcentaje de votos por el FAM:", paste(round(porcentaje_VPM_21, 2), "%"), "<br>",
@@ -231,6 +233,8 @@ mapa <- mapa %>%
         weight = 1,
        popup = ~paste( "Numero de Sección:", SECCION, "<br>",
                        "Coalición Ganadora:", GANADOR_21, "<br>",
+                       "Partido preponderante en 2021:", Ganador_Partido21, "<br>",
+                       "Partido preponderante en 2018:", Cambio_elector, "<br>",
                        "Competitividad de la Sección:", CompetitividadD, "<br>",
                        "Votos por el FAM:", VaxMex_21, "<br>",
                        "Porcentaje de votos por el FAM:", paste(round(porcentaje_VPM_21, 2), "%"), "<br>",
@@ -295,3 +299,5 @@ mapa <- mapa %>%
 
 # Mostrar el mapa
 mapa
+
+
