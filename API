@@ -65,13 +65,16 @@ Resultados_SONORA <- Resultados_SONORA %>%
 Resultados_SONORA_DF2 <- filter(Resultados_SONORA, DISTRITO == 2)
 Secciones_SONORA_DF2 <- filter(Secciones_SONORA, DISTRITO == 2)
 Manzanas_SONORA_DF2 <- filter(Manzanas_SONORA, DISTRITO_F == 2)
+Secciones_SONORA_DF2 <- filter(Secciones_SONORA, DISTRITO == 2)
 
-# Filtrar el DataFrame Municipios_SONORA
-Municipios_DF2 <- c(2, 5, 10, 15, 16, 19, 24, 25, 27, 30, 37)
+# Obtener los valores únicos de MUNICIPIO y DISTRITO_L de Secciones_SONORA_DF2
+Municipios_DF2 <- unique(Secciones_SONORA_DF2$MUNICIPIO)
+Valores_DL_DF2 <- unique(Secciones_SONORA_DF2$DISTRITO_L)
+
+# Filtrar Municipios_SONORA
 Municipios_SONORA_DF2 <- Municipios_SONORA[Municipios_SONORA$MUNICIPIO %in% Municipios_DF2, ]
 
-# Filtrar el DataFrame DistritoL_SONORA
-Valores_DL_DF2 <- c(4, 5, 7, 18)
+# Filtrar DistritoL_SONORA
 DistritoL_SONORA_DF2 <- DistritoL_SONORA[DistritoL_SONORA$DISTRITO_L %in% Valores_DL_DF2, ]
 
 
