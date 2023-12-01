@@ -19,7 +19,7 @@ Manzanas_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\MANZANA.sh
 Secciones_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\SECCION.shp")
 DistritoF_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\DISTRITO_FEDERAL.shp")
 DistritoL_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\DISTRITO_LOCAL.shp")
-ResultadosDF <- read_sf("D:\\52556\\Documents\\Distritos Federales 24\\Resultados_2421.csv")
+ResultadosDF <- read_sf("D:\\52556\\Documents\\Sonora_Isaac\\Resultados_1821.csv")
 Lista_Nominal_Selected <- read_sf("D:\\52556\\Documents\\Nassar-oax\\Lista_Nominal_Selected.csv")
 Municipios_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\MUNICIPIO.shp")
 
@@ -97,7 +97,10 @@ Resultados_SONORA_DF2 <- Resultados_SONORA_DF2 %>%
         quintilD == labels[5] ~ "Muy alta Competitividad"
     ))
 
-# Unir los dataframes por SECCION y ENTIDAD
+
+Resultados_SONORA_DF2 <- Resultados_SONORA_DF2 %>% select( -"DISTRITO",-"DISTRITO_L",-"MUNICIPIO",)
+
+  # Unir los dataframes por SECCION y ENTIDAD
 mapaSONORA_DF2 <- left_join(Secciones_SONORA_DF2, Resultados_SONORA_DF2, by = c("SECCION", "ENTIDAD"))
 
 # Transformar sistema de coordenadas
