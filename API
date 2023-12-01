@@ -21,6 +21,8 @@ DistritoF_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\DISTRITO_
 DistritoL_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\DISTRITO_LOCAL.shp")
 ResultadosDF <- read_sf("D:\\52556\\Documents\\Distritos Federales 24\\Resultados_2421.csv")
 Lista_Nominal_Selected <- read_sf("D:\\52556\\Documents\\Nassar-oax\\Lista_Nominal_Selected.csv")
+Municipios_SONORA <- read_sf("D:\\Descargas\\SHAPEFILES_MEX\\26 SONORA\\MUNICIPIO.shp")
+
 
 Lista_Nominal_Selected  <- Lista_Nominal_Selected  %>%
     mutate_at(vars(-c("NOMBRE_ENTIDAD", "Gene_prepo")),
@@ -63,6 +65,14 @@ Resultados_SONORA_DF2 <- filter(Resultados_SONORA, DISTRITO == 2)
 Secciones_SONORA_DF2 <- filter(Secciones_SONORA, DISTRITO == 2)
 Manzanas_SONORA_DF2 <- filter(Manzanas_SONORA, DISTRITO_F == 2)
 
+# Filtrar el DataFrame Municipios_SONORA
+Municipios_DF2 <- c(2, 5, 10, 15, 16, 19, 24, 25, 27, 30, 37)
+Municipios_SONORA_DF2 <- Municipios_SONORA[Municipios_SONORA$MUNICIPIO %in% Municipios_DF2, ]
+
+# Filtrar el DataFrame DistritoL_SONORA
+Valores_DL_DF2 <- c(4, 5, 7, 18)
+DistritoL_SONORA_DF2 <- DistritoL_SONORA[DistritoL_SONORA$DISTRITO_L %in% Valores_DL_DF2, ]
+
 
 # Crear quintiles
 quintilesF <- quantile(Resultados_SONORA_DF2$porcentaje_VPM_21, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
@@ -94,6 +104,8 @@ mapaSONORA_DF2 <- left_join(Secciones_SONORA_DF2, Resultados_SONORA_DF2, by = c(
 mapaSONORA_DF2 <- st_transform(mapaSONORA_DF2, crs = 4326)
 Secciones_SONORA_DF2 <- st_transform(Secciones_SONORA_DF2, crs = 4326)
 Manzanas_SONORA_DF2 <- st_transform(Manzanas_SONORA_DF2, crs = 4326)
+DistritoL_SONORA_DF2 <- st_transform(DistritoL_SONORA_DF2, crs = 4326)
+Municipios_SONORA_DF2 <- st_transform(Municipios_SONORA_DF2, crs = 4326)
 
 # Definir los colores para cada nivel de competitividad
 colores_GANADOR_21 <- colorFactor(
@@ -121,20 +133,7 @@ mapaSONORA_DF2$CompetitividadD <- factor(mapaSONORA_DF2$CompetitividadD,
 mapa <- leaflet() %>%
     addProviderTiles(provider = "OpenStreetMap")
 
-# Agregar la primera capa de polígonos con los datos de mapaSONORA_DF2
-mapa <- mapa %>%
-    addPolygons(
-        data = Secciones_SONORA_DF2,
-        fillColor = "white",    # Color de fondo blanco
-        fillOpacity = 0.5,      # Transparencia del fondo
-        label = ~SECCION,
-        color = "black",        # Color de los bordes
-        weight = 1,             # Grosor de los bordes
-        opacity = 0.8,          # Opacidad de los bordes
-        group = "Secciones"     # Nombre del grupo de la capa
-    )
-
-# Agregar la segunda capa de polígonos con los datos de  mapaSONORA_DF2
+# Agregar la primera capa de polígonos de manzanas
 mapa <- mapa %>%
     addPolygons(
         data = Manzanas_SONORA_DF2,
@@ -146,7 +145,45 @@ mapa <- mapa %>%
         opacity = 0.8,          # Opacidad de los bordes
         group = "Manzanas"     # Nombre del grupo de la capa
     )
+
+# Agregar la  capa de polígonos a nivel de Secciones
+mapa <- mapa %>%
+    addPolygons(
+        data = Secciones_SONORA_DF2,
+        fillColor = "white",    # Color de fondo blanco
+        fillOpacity = 0.5,      # Transparencia del fondo
+        label = ~SECCION,
+        color = "black",        # Color de los bordes
+        weight = 1,             # Grosor de los bordes
+        opacity = 0.8,          # Opacidad de los bordes
+        group = "Secciones"     # Nombre del grupo de la capa
+    )
+# Agregar la  capa de polígonos a nivel municipios
+mapa <- mapa %>%
+    addPolygons(
+        data = Municipios_SONORA_DF2,
+        fillColor = "white",    # Color de fondo blanco
+        fillOpacity = 0.5,      # Transparencia del fondo
+        label = ~NOMBRE,
+        color = "black",        # Color de los bordes
+        weight = 1,             # Grosor de los bordes
+        opacity = 0.8,          # Opacidad de los bordes
+        group = "Municipios"     # Nombre del grupo de la capa
+    )
+    # Agregar la segunda capa de Distritos Locales
+mapa <- mapa %>%
+    addPolygons(
+        data = DistritoL_SONORA_DF2,
+        fillColor = "white",    # Color de fondo blanco
+        fillOpacity = 0.5,      # Transparencia del fondo
+        label = ~DISTRITO_L,
+        color = "black",        # Color de los bordes
+        weight = 1,             # Grosor de los bordes
+        opacity = 0.8,          # Opacidad de los bordes
+        group = "Distritos Locales"     # Nombre del grupo de la capa
+    )
     
+  
 # Agregar la tercer capa de polígonos con los datos de mapaSONORA_DF2 y el color según el GANADOR_21
 mapa <- mapa %>%
     addPolygons(
@@ -216,7 +253,7 @@ mapa <- mapa %>%
 # Agregar el control de capas al mapa
 mapa <- mapa %>%
     addLayersControl(
-        baseGroups = c("Secciones", "Manzanas"),
+        baseGroups = c("Manzanas", "Secciones", "Municipios","Distritos Locales" ),
         overlayGroups = c("Coalición Ganadora", "Competitividad"),
         options = layersControlOptions(collapsed = FALSE)
     )
@@ -229,7 +266,8 @@ mapa <- mapa %>%
         values = ~GANADOR_21, # Establecer los valores de la leyenda
         title = "Ganador de la última elección", # Establecer el título de la leyenda
         position = "bottomleft",
-        layerId = "LeyendaGANADOR_21"
+        layerId = "LeyendaGANADOR_21",
+        group = "Coalición Ganadora"  # Grupo de la leyenda
     ) %>%
     addLegend(
         data = mapaSONORA_DF2,
@@ -237,13 +275,15 @@ mapa <- mapa %>%
         values = ~CompetitividadD, # Establecer los valores de la leyenda
         title = "Competitividad Electoral",
         position = "bottomleft",
-        layerId = "LeyendaCompetitividad"
+        layerId = "LeyendaCompetitividad",
+        group = "Competitividad"  # Grupo de la leyenda
     ) 
 
 # Agregar el control de HTML al mapa
 mapa <- mapa %>%
     addControl(
         html = "<div style='margin-bottom: 10px; text-align: center;'>
+                Distrito Federal 2 de Sonora<br>
                 Elaborado por Qualia: Asesoria Especializada<br>
                 Con datos del INE y el INEGI
             </div>",
