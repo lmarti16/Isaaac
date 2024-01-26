@@ -45,6 +45,9 @@ ResultadosDF $MORENA_21 <- as.numeric(ResultadosDF $MORENA_21)
 Lista_Nominal_Selected $SECCION <- as.numeric(Lista_Nominal_Selected $SECCION)
 Lista_Nominal_Selected $ENTIDAD <- as.numeric(Lista_Nominal_Selected $ENTIDAD)
 
+ResultadosDF <- ResultadosDF %>% 
+    mutate( porcentajePRI = PRI_21 / TOTAL_VOTOS_CALCULADOS_21)
+
 # Renombrar los resultados 
 ResultadosDF$GANADOR_21 <- recode(ResultadosDF$GANADOR_21,
                                   "EMPATE" = "Empate",
@@ -367,6 +370,8 @@ mapa <- mapa %>%
                        "Partido preponderante en 2018:", Ganador_Partido18, "<br>",
                        "Competitividad de la Sección FAM:", CompetitividadD, "<br>",
                        "Competitividad de la Sección PRI:", CompetitividadP, "<br>",
+                       "Votos por el PRI:", PRI_21, "<br>",
+                       "Porcentaje de votos por el FAM:", paste(round(porcentajePRI, 2), "%"), "<br>",
                        "Votos por el FAM:", VaxMex_21, "<br>",
                        "Porcentaje de votos por el FAM:", paste(round(porcentaje_VPM_21, 2), "%"), "<br>",
                        "Votos por JHH:", JHH_21, "<br>",
