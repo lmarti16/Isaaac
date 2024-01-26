@@ -13,6 +13,7 @@ library(wesanderson)
 library(pdftools)
 library(leaflet)
 library(rio)
+library(stringr)
 
 
 # Leer archivo SHP usando read_sf()
