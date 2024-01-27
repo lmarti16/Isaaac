@@ -13,6 +13,7 @@ library(wesanderson)
 library(pdftools)
 library(leaflet)
 library(rio)
+library(rio)
 
 ResultadosDF <- read_sf("D:\\52556\\Documents\\Sonora_Isaac\\Resultados_1821.csv")
 Secciones_Mex <- read_sf("D:\\52556\\Documents\\Distritos Federales 24\\MEX_SECCIONES.shp")
@@ -42,7 +43,10 @@ ResultadosDF $MORENA_21 <- as.numeric(ResultadosDF $MORENA_21)
 ResultadosDF <- ResultadosDF %>% 
     mutate(participacion = (TOTAL_VOTOS_CALCULADOS_21 / LISTA_NOMINAL_CASILLA_21 ) * 100)
 
-quintilesparti <- quantile(ResultadosDF$participacion, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
+ResultadosDF <- ResultadosDF %>% 
+    mutate(voto_SHH = (JHH_21 / LISTA_NOMINAL_CASILLA_21 ) * 100)
+
+quintilesSHH<- quantile(ResultadosDF$voto_SHH, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
 
 # Definir etiquetas personalizadas
 labels_custom <- function(breaks) {
@@ -53,20 +57,41 @@ labels_custom <- function(breaks) {
   }
   return(labels)
 }
-ResultadosDF$quintilparti <- cut(ResultadosDF$participacion, breaks = quintilesparti, include.lowest = TRUE, labels = labels_custom(quintilesparti))
+ResultadosDF$quintilSHH <- cut(ResultadosDF$voto_SHH, breaks = quintilesSHH, include.lowest = TRUE, labels = labels_custom(quintilesSHH))
+
+
+
+ResultadosDF <- ResultadosDF %>% 
+  mutate(voto_SHH = (JHH_21 / LISTA_NOMINAL_CASILLA_21) * 100)
+
+# Definir los puntos de corte en intervalos de 10%
+breaks_10 <- seq(0, 100, by = 10)
+
+# Definir etiquetas personalizadas
+labels_custom <- function(breaks) {
+  n <- length(breaks) - 1
+  labels <- character(n)
+  for (i in 1:n) {
+    labels[i] <- paste0("(", floor(breaks[i]), ", ", floor(breaks[i + 1]), "]")
+  }
+  return(labels)
+}
+
+ResultadosDF$intervalo_10 <- cut(ResultadosDF$voto_SHH, breaks = breaks_10, include.lowest = TRUE, labels = labels_custom(breaks_10))
 
 # Asumiendo que Secciones_Mex y ResultadosDF son objetos sf
-Mapa_MEx <- st_join(Secciones_Mex, ResultadosDF, by = c("SECCION", "ENTIDAD"))
+Mapa_MEx <- left_join(Secciones_Mex, ResultadosDF, by = c("SECCION", "ENTIDAD"))
+
 
 #Mapa Participación
-Mapa_participacion <- ggplot() +
+Mapa_SHH <- ggplot() +
     annotation_map_tile(type = "osm", zoom = 5) +
-    geom_sf(data = Mapa_MEx, aes(fill = quintilesparti), alpha = .9, color = NA) +
+    geom_sf(data = Mapa_MEx, aes(fill = intervalo_10), alpha = .9, color = NA) +
     geom_sf(data = Entidades, aes(fill = NULL), color = "black", size = 0.1, alpha = 0) +
     geom_sf_label(data = Entidades, aes(label = NOMBRE), size = 1, fill = "white", color = "#014d64", alpha = 0 , label.size = NA) +
-    scale_fill_brewer(palette = "GnBu", name = "Participación de la sección Electoral, labels = c("La más baja", "Baja ", " media", "Alta ", "La más alta ")) +
-    labs(title = "¿Dónde hay más participación electoral en México?",
-         subtitle = "Por sección electoral con base en la elección del 2021",
+  scale_fill_brewer(palette = "OrRd", name = "Participación Electoral", labels = c("0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%")) +
+    labs(title = "¿Dónde hay más votantes del regímen?",
+         subtitle = "Porcentaje de votos de Morena y aliados en 2021 por sección electoral",
          caption = paste0("Elaborado por Luis Martínez(@Luis_MartinezRZ)\n(Fuente: INEGI e INE corte a Enero 24)")) +
     theme_economist(base_family="ITC Officina Sans") + # Usar un tema más elegante
     guides(fill = guide_legend(ncol = 4)) +
@@ -85,6 +110,6 @@ Mapa_participacion <- ggplot() +
           plot.subtitle = element_text(hjust = 0.5,size = 20, color = "#014d64", face = "bold"))  # Centrar el subtítulo
 
 # Guardar el primer mapa como PDF
-ggsave("D:\\52556\\Documents\\Mapa_participacion.pdf",
-       plot = Mapa_participacion,
+ggsave("D:\\52556\\Documents\\Mapa_SHH.pdf",
+       plot = Mapa_SHH,
        width = 11, height = 8.5, units = "in", device = "pdf")
