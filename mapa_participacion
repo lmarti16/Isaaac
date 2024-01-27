@@ -1,0 +1,90 @@
+# Cargar librerías
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(reshape2)	
+library(tidyr)
+library(readxl)
+library(colorspace)
+library(ggspatial)
+library(ggthemes)
+library(wesanderson)
+library(pdftools)
+library(leaflet)
+library(rio)
+
+ResultadosDF <- read_sf("D:\\52556\\Documents\\Sonora_Isaac\\Resultados_1821.csv")
+Secciones_Mex <- read_sf("D:\\52556\\Documents\\Distritos Federales 24\\MEX_SECCIONES.shp")
+Entidades <- read_sf ("D:\\Descargas\\ENTIDAD\\ENTIDAD\\ENTIDAD.shp")
+Entidades$NOMBRE <- str_replace_all(Entidades$NOMBRE, " ", "\n")
+
+# Suponiendo que tu dataframe se llama 'Municipios_HIDALGO'
+Entidades <- Entidades %>%
+  mutate(NOMBRE = paste0(tools::toTitleCase(tolower(NOMBRE))))
+
+ResultadosDF $porcentaje_VPM_21 <- as.numeric(ResultadosDF $porcentaje_VPM_21)
+ResultadosDF $porcentaje_JHH_21 <- as.numeric(ResultadosDF $porcentaje_JHH_21)
+ResultadosDF $porcentaje_MC_21 <- as.numeric(ResultadosDF $porcentaje_MC_21)
+ResultadosDF $SECCION <- as.numeric(ResultadosDF $SECCION)
+ResultadosDF $ENTIDAD <- as.numeric(ResultadosDF $ENTIDAD)
+ResultadosDF $VOTOS_NULOS_21 <- as.numeric(ResultadosDF $VOTOS_NULOS_21)
+ResultadosDF $TOTAL_VOTOS_CALCULADOS_21 <- as.numeric(ResultadosDF $TOTAL_VOTOS_CALCULADOS_21)
+ResultadosDF $LISTA_NOMINAL_CASILLA_21 <- as.numeric(ResultadosDF $LISTA_NOMINAL_CASILLA_21)
+ResultadosDF $VaxMex_21 <- as.numeric(ResultadosDF $VaxMex_21)
+ResultadosDF $JHH_21 <- as.numeric(ResultadosDF $JHH_21)
+ResultadosDF $MC_21 <- as.numeric(ResultadosDF $MC_21)
+ResultadosDF $PAN_21 <- as.numeric(ResultadosDF $PAN_21)
+ResultadosDF $PRI_21 <- as.numeric(ResultadosDF $PRI_21)
+ResultadosDF $MORENA_21 <- as.numeric(ResultadosDF $MORENA_21)
+
+
+ResultadosDF <- ResultadosDF %>% 
+    mutate(participacion = (TOTAL_VOTOS_CALCULADOS_21 / LISTA_NOMINAL_CASILLA_21 ) * 100)
+
+quintilesparti <- quantile(ResultadosDF$participacion, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
+
+# Definir etiquetas personalizadas
+labels_custom <- function(breaks) {
+  n <- length(breaks) - 1
+  labels <- character(n)
+  for (i in 1:n) {
+    labels[i] <- paste0("(", floor(breaks[i]), ", ", floor(breaks[i + 1]), "]")
+  }
+  return(labels)
+}
+ResultadosDF$quintilparti <- cut(ResultadosDF$participacion, breaks = quintilesparti, include.lowest = TRUE, labels = labels_custom(quintilesparti))
+
+# Asumiendo que Secciones_Mex y ResultadosDF son objetos sf
+Mapa_MEx <- st_join(Secciones_Mex, ResultadosDF, by = c("SECCION", "ENTIDAD"))
+
+#Mapa Participación
+Mapa_participacion <- ggplot() +
+    annotation_map_tile(type = "osm", zoom = 5) +
+    geom_sf(data = Mapa_MEx, aes(fill = quintilesparti), alpha = .9, color = NA) +
+    geom_sf(data = Entidades, aes(fill = NULL), color = "black", size = 0.1, alpha = 0) +
+    geom_sf_label(data = Entidades, aes(label = NOMBRE), size = 1, fill = "white", color = "#014d64", alpha = 0 , label.size = NA) +
+    scale_fill_brewer(palette = "GnBu", name = "Participación de la sección Electoral, labels = c("La más baja", "Baja ", " media", "Alta ", "La más alta ")) +
+    labs(title = "¿Dónde hay más participación electoral en México?",
+         subtitle = "Por sección electoral con base en la elección del 2021",
+         caption = paste0("Elaborado por Luis Martínez(@Luis_MartinezRZ)\n(Fuente: INEGI e INE corte a Enero 24)")) +
+    theme_economist(base_family="ITC Officina Sans") + # Usar un tema más elegante
+    guides(fill = guide_legend(ncol = 4)) +
+    theme(legend.position = "bottom",
+          legend.background = element_rect(fill = "#014d64"),
+          legend.text = element_text(size = 10, color = "white"),
+          legend.title = element_text(size = 13, color = "white", face = "bold"),
+          axis.text = element_blank(),  # Quitar texto de los ejes
+          axis.title = element_blank(),  # Quitar título de los ejes
+          axis.line = element_blank(),   # Quitar línea de los ejes
+          panel.background = element_blank(),  # Quitar fondo del panel
+          panel.grid.major = element_blank(),  # Quitar líneas de la grilla
+          panel.grid.minor = element_blank(),   # Quitar líneas de la grilla menor
+          plot.title = element_text(hjust = 0.5,size = 24, color = "#014d64", face = "bold"),  # Centrar y ajustar el tamaño del título
+          plot.caption = element_text(hjust = 0.5,size = 18, color = "#014d64", face = "bold"),  # Centrar la caption y cambiar el color a blanco
+          plot.subtitle = element_text(hjust = 0.5,size = 20, color = "#014d64", face = "bold"))  # Centrar el subtítulo
+
+# Guardar el primer mapa como PDF
+ggsave("D:\\52556\\Documents\\Mapa_participacion.pdf",
+       plot = Mapa_participacion,
+       width = 11, height = 8.5, units = "in", device = "pdf")
