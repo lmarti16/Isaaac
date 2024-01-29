@@ -47,6 +47,10 @@ ResultadosDF <- ResultadosDF %>%
 ResultadosDF <- ResultadosDF %>% 
     mutate(voto_MC = (MC_21 / LISTA_NOMINAL_CASILLA_21 ) * 100)
 
+
+ResultadosDF <- ResultadosDF %>% 
+    mutate(voto_Morena = (MORENA_21 / LISTA_NOMINAL_CASILLA_21 ) * 100)
+
 quintilesMC<- quantile(ResultadosDF$voto_MC, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1), na.rm = TRUE)
 
 # Definir etiquetas personalizadas
